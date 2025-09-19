@@ -1,4 +1,4 @@
-package com.bootA.ecom_server.models;
+package com.mtd.ecom_server.models;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,6 +14,7 @@ public class Product {
 	private float price;
 	private int stock;
 	
+
 	public String getId() {
 		return id;
 	}
