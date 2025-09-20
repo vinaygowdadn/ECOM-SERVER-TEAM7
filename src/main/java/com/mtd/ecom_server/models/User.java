@@ -1,8 +1,11 @@
 package com.mtd.ecom_server.models;
 
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.mtd.ecom_server.enums.UserRoles;
 
 @Document(collection = "users")
 public class User {
@@ -13,6 +16,7 @@ public class User {
     private String email; 
     private String password;
     private String street;
+    private UserRoles roles;
     private String city;
     private String zip;
 	public String getId() {
@@ -56,5 +60,11 @@ public class User {
 	}
 	public void setZip(String zip) {
 		this.zip = zip;
+	}
+	public UserRoles getRoles() {
+		return roles;
+	}
+	public void setRoles(UserRoles roles) {
+		this.roles = roles;
 	}
 }

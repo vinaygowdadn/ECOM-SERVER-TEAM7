@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mtd.ecom_server.enums.UserRoles;
 import com.mtd.ecom_server.exceptions.ResourceNotFoundException;
 import com.mtd.ecom_server.models.User;
 import com.mtd.ecom_server.repos.UserRepo;
@@ -32,6 +35,69 @@ public class UserController {
 
 	private final static Logger log = LoggerFactory.getLogger(UserController.class);
 
+	 static class SignupResponse {
+
+	        private String name;
+	        private String uid;
+	        private String email;
+	        private String role;
+	        public SignupResponse(String name,String uid, String email, String role) {
+	            this.name=name;
+	            this.uid = uid;
+	            this.email = email;
+	            this.role = role;
+
+	        }
+
+	        public String getName() { return name; }
+	        public String getUid() { return uid; }
+	        public String getEmail() { return email; }
+	        public String getRole() { return role; }
+	 }
+	@Tag(name = "Signup (Static)") 
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@RequestBody User newUser) {
+        log.info("Attempting signup for email: {}", newUser.getEmail());
+
+        Optional<User> existingUser = userRepo.findByEmail(newUser.getEmail());
+        if (existingUser.isPresent()) {
+            log.error("Email already exists: {}", newUser.getEmail());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already exists");
+        }
+
+        // Default role = USER if not set
+        if (newUser.getRoles() == null) {
+            newUser.setRoles(UserRoles.USER);
+        }
+
+        User savedUser = userRepo.save(newUser);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new SignupResponse(savedUser.getName(),savedUser.getId(), savedUser.getEmail(), savedUser.getRoles().toString()));
+    }
+	@Tag(name = "Login (Static)")
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody User loginRequest) {
+        log.info("Login attempt for email: {}", loginRequest.getEmail());
+
+        Optional<User> existingUser = userRepo.findByEmail(loginRequest.getEmail());
+        if (existingUser.isEmpty()) {
+            log.error("User not found for email: {}", loginRequest.getEmail());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+        }
+
+        User user = existingUser.get();
+        if (!user.getPassword().equals(loginRequest.getPassword())) {
+            log.error("Invalid password for email: {}", loginRequest.getEmail());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+        }
+
+        return ResponseEntity.ok(
+                new SignupResponse(user.getName(),user.getId(), user.getEmail(), user.getRoles().toString())
+        );
+    }
+	
 	@Tag(name = "Get All Users")
 	@GetMapping("/all")
 	public List<User> getAllUsers() {

@@ -26,19 +26,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/products")
 public class ProductController {
+	private static final Logger log = LoggerFactory.getLogger(ProductController.class);
 
 	@Autowired ProductRepo productRepo;
-	private final static Logger log = LoggerFactory.getLogger(ProductController.class);
 	@Tag(name = "Get All Products")
 	@GetMapping("/all")
 	public List<Product> getAllProducts() {
-		log.info("Fetching the products");
+		log.info("Fetching products");
 		return productRepo.findAll();
 	}
 	@Tag(name = "Add Product")
 	@PostMapping("/add")
 	public Product addProduct(@RequestBody Product newproduct) {
-		log.info("Adding new product"+newproduct);
+		log.info("Adding product");
 		return productRepo.save(newproduct);
 	}
 	@Tag(name = "Delete Products")
@@ -46,7 +46,6 @@ public class ProductController {
 	public String deleteProduct(@PathVariable String id) {
 	Optional<Product> findproduct  = productRepo.findById(id);
 		if(findproduct.isEmpty()) {
-			log.error("Product Not Found");
 			throw new ResourceNotFoundException("Product Not Found");
 		}
 		productRepo.deleteById(id);
